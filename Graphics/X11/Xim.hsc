@@ -16,20 +16,29 @@ module Graphics.X11.Xim (
 , filterEvent
 , utf8LookupString
 , utf8DrawString
+, utf8TextExtents
+, utf8TextEscapement
 
 ) where
 
 import Graphics.X11.XimTypes
-import Codec.Binary.UTF8.String ( decodeString, encodeString )
 
-import Graphics.X11	( Window, XEventPtr, GC, KeySym )
+#if __GLASGOW_HASKELL__ >= 702
+import Codec.Binary.UTF8.String ( encode )
+#else
+import Codec.Binary.UTF8.String ( decodeString, encode )
+#endif
+
+import Graphics.X11	( Window, XEventPtr, GC, KeySym, Rectangle )
 import Graphics.X11.Xlib.Extras	( FontSet(..) )
 import Graphics.X11.Xlib.Types	( Display(..) )
-import Foreign		( Int32, nullPtr, Ptr, Word32, alloca, peek, Int64,
-				Word64,
-				allocaBytes, throwIfNull )
+import Foreign		( Int32, nullPtr, Ptr, Word8, alloca, peek, Int64,
+				Word64, Word32,
+				allocaBytes, throwIfNull, withArray0 )
 import Foreign.C.Types	( CInt, CChar )
 import Foreign.C.String	( CString, peekCStringLen, withCString )
+
+import System.IO.Unsafe
 
 -- DATA TYPE
 
@@ -105,10 +114,18 @@ utf8LookupStringGen ( XIC pic ) pev bs = allocaBytes bs $ \buf ->
 			XLookupBoth   -> do
 				str <- peekCStringLen ( buf, cnt )
 				cks <- peek ks
+#if __GLASGOW_HASKELL__ >= 702
+                                return ( Just str, Just cks )
+#else
 				return ( Just $ decodeString str, Just cks )
+#endif
 			XLookupChars   -> do
 				str <- peekCStringLen ( buf, cnt )
-				return ( Just $ decodeString str, Nothing )
+#if __GLASGOW_HASKELL__ >= 702
+				return ( Just str, Nothing )
+#else
+                                return ( Just $ decodeString str, Nothing )
+#endif
 			XLookupKeySym   -> do
 				cks <- peek ks
 				return ( Nothing, Just cks )
@@ -119,15 +136,39 @@ utf8LookupStringGen ( XIC pic ) pev bs = allocaBytes bs $ \buf ->
 
 foreign import ccall "X11/Xlib.h Xutf8DrawString"		c_Xutf8DrawString	::
 	Ptr Display -> Window -> Ptr FontSet -> GC -> CInt -> CInt
-		-> CString -> CInt -> IO ()
+		-> Ptr Word8 -> CInt -> IO ()
 utf8DrawString :: Display -> Window -> FontSet -> GC -> Int -> Int -> String ->
 	IO ()
 utf8DrawString ( Display pdpy ) win ( FontSet pfs ) gc x y str =
-	let	utf8Str = encodeString str
-	 in withCString utf8Str $ \cstr ->
+	let	utf8Str = encode str
+	 in withArray0 0 utf8Str $ \cstr ->
 		c_Xutf8DrawString pdpy win pfs gc ( fromIntegral x )
 			( fromIntegral y ) cstr
 			( fromIntegral $ length utf8Str )
+
+foreign import ccall "X11/Xlib.h Xutf8TextExtents"		c_Xutf8TextExtents	::
+	Ptr FontSet -> Ptr Word8 -> CInt -> Ptr Rectangle -> Ptr Rectangle -> IO ()
+utf8TextExtents :: FontSet -> String -> (Rectangle, Rectangle)
+utf8TextExtents ( FontSet pfs ) str =
+	let	utf8Str = encode str
+        -- unsafePerformIO is safe here as Xutf8TextExtents does not
+        -- involve a server round trip, and has no side effects as
+        -- long as the FontSet has not been freed before the thunk is
+        -- forced.
+	 in unsafePerformIO $ withArray0 0 utf8Str $ \cstr -> alloca $ \r1 -> alloca $ \r2 -> do
+		c_Xutf8TextExtents pfs cstr ( fromIntegral $ length utf8Str ) r1 r2
+                r1' <- peek r1
+                r2' <- peek r2   
+                return (r1', r2')
+
+foreign import ccall "X11/Xlib.h Xutf8TextEscapement"		c_Xutf8TextEscapement	::
+	Ptr FontSet -> Ptr Word8 -> CInt -> IO CInt
+utf8TextEscapement :: FontSet -> String -> CInt
+utf8TextEscapement ( FontSet pfs ) str =
+	let	utf8Str = encode str
+        -- unsafePerformIO is safe like in utf8TextExtents.
+	 in unsafePerformIO $ withArray0 0 utf8Str $ \cstr ->
+		c_Xutf8TextEscapement pfs cstr ( fromIntegral $ length utf8Str )
 
 withMaybeCString :: Maybe String -> ( CString -> IO a ) -> IO a
 withMaybeCString Nothing      f = f nullPtr
