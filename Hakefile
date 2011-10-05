@@ -1,0 +1,30 @@
+import Development.Hake
+import Development.Hake.FunSet
+
+target     = "use-xim"
+distDir    = "./dist/build/use-xim/"
+distTarget = distDir ++ target
+cabalFile  = "use-xim.cabal"
+setupConf  = "./dist/setup-config"
+sources    = [ "Graphics/X11/Xim.hsc", "useXim.hsc", setupConf ]
+
+main = do
+  hake $ [
+
+   dflt [ target ]
+   ,
+   rule "" ".ehs" $ \t ( s : _ ) -> [ "ehs " ++ s ++ " > " ++ t ]
+   ,
+   file [ target ] [ distTarget ] $ \t ( s : _ ) -> [
+      "cp " ++ s ++ " " ++ t
+    ]
+   ,
+   file [ distTarget ] sources $ \ _ _ -> [ "cabal build" ]
+   ,
+   file [ setupConf ] [ cabalFile ] $ \ _ _ -> [ "cabal configure" ]
+   ,
+   rule ".h" ".c" $ \ t ( s : _ ) -> [
+      "cat " ++ s ++ " | runhaskell mkHeader.hs > " ++ t
+    ]
+
+   ]

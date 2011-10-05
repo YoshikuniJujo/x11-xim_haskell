@@ -1,0 +1,51 @@
+<%% import GetXIMStyles %%>
+<%% import Data.List %%>
+
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+
+module Graphics.X11.XimTypes (
+
+  XNInputStyle(..)
+, getCXNInputStyle
+
+, XLookupStatus(..)
+, fromCXLookupStatus
+
+) where
+
+import Data.Bits	( (.|.)		)
+import Foreign		( Int32, Int64	)
+
+data XNInputStyle =
+<%== fmap ( ("\t" ++) . concat . intersperse "\t|\n\t" ) getDefs %>
+
+getCXNInputStyle1 :: XNInputStyle -> #type long
+<%%
+
+mkGCXNIS1 :: String -> String
+mkGCXNIS1 cnst = "getCXNInputStyle1 " ++ cnst ++ "\t= #const " ++ cnst
+
+mkGetCXNInputStyle1 :: [ String ] -> String
+mkGetCXNInputStyle1 cnsts = unlines $ map mkGCXNIS1 cnsts
+
+%%>
+<%== fmap mkGetCXNInputStyle1 getDefs %>
+
+getCXNInputStyle :: [ XNInputStyle ] -> #{ type long }
+getCXNInputStyle = foldl1 (.|.) . map getCXNInputStyle1
+
+data XLookupStatus =
+<%== fmap ( ("\t" ++) . concat . intersperse "\t|\n\t" ) getXLookupStatuses %>
+fromCXLookupStatus :: #{ type Status } -> XLookupStatus
+<%%
+
+mkFromCXLookupStatus1 :: String -> String
+mkFromCXLookupStatus1 cnst =
+	"fromCXLookupStatus ( #const " ++ cnst ++ "\t)" ++ " = " ++ cnst
+mkFromCXLookupStatus :: [ String ] -> String
+mkFromCXLookupStatus cnsts = unlines $ map mkFromCXLookupStatus1 cnsts
+
+%%>
+<%== fmap mkFromCXLookupStatus getXLookupStatuses %>
+fromCXLookupStatus _  = error "bad Status"
