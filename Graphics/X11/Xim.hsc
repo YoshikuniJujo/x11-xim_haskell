@@ -33,7 +33,7 @@ import Graphics.X11	( Window, XEventPtr, KeySym, Rectangle )
 import Graphics.X11.Xlib.Extras	( FontSet(..) )
 import Graphics.X11.Xlib.Types	( Display(..), GC(..) )
 import Foreign		( Int32, nullPtr, Ptr, Word8, alloca, peek, Int64,
-				Word64,
+				Word32, Word64,
 				allocaBytes, throwIfNull, withArray0 )
 import Foreign.C.Types	( CInt(..), CChar )
 import Foreign.C.String	( CString, peekCStringLen, withCString )
