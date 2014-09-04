@@ -8,3 +8,6 @@ _ehs/
 /Graphics/X11/Xim.hs
 /Graphics/X11/XimTypes.hs
 .*.swp
+*.hi
+*.o
+/tests/useXim

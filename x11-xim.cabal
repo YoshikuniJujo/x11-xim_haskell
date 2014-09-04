@@ -9,6 +9,7 @@ license:	BSD3
 license-file:	LICENSE
 copyright:	(c) 2010-2010 Yoshikuni Jujo
 category:	Graphics
+homepage:	https://github.com/YoshikuniJujo/x11-xim_haskell/wiki/
 synopsis:	A binding to the xim of X11 graphics library
 description:	A binding to the xim of X11 graphics library
 extra-source-files:	tests/useXim.hs

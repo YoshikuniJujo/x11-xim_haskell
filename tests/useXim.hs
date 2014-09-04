@@ -15,7 +15,8 @@ import Graphics.X11.Types	( xK_Return				)
 import Graphics.X11.Xim		(
 	XIM, openIM, closeIM, XIC, createIC, destroyIC, getICValue,
 	filterEvent, XNInputStyle(..),
-	utf8LookupString, utf8DrawString				)
+	utf8LookupString, utf8DrawString,
+	setICFocus, unsetICFocus                                        )
 import Data.IORef		( IORef, newIORef, readIORef, writeIORef,
 					modifyIORef			)
 import Data.Maybe		( fromMaybe				)
@@ -101,7 +102,8 @@ nextNotFilteredEvent dpy e = do
 
 main :: IO ()
 main = runWithXIM $ \dpy win gc im ic delWin fs e -> do
-	setICFocus ic
+--	unsetICFocus ic
+--	setICFocus ic
 	posx	<- newIORef 5
 	posy	<- newIORef 20
 	doUntil_ $ do
