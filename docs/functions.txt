@@ -1,0 +1,2 @@
+void XSetICFocus(XIC ic)
+void XUnsetICFocus(XIC ic)

@@ -19,6 +19,9 @@ module Graphics.X11.Xim (
 , utf8TextExtents
 , utf8TextEscapement
 
+, setICFocus
+, unsetICFocus
+
 ) where
 
 import Graphics.X11.XimTypes
@@ -169,6 +172,14 @@ utf8TextEscapement ( FontSet pfs ) str =
         -- unsafePerformIO is safe like in utf8TextExtents.
 	 in unsafePerformIO $ withArray0 0 utf8Str $ \cstr ->
 		c_Xutf8TextEscapement pfs cstr ( fromIntegral $ length utf8Str )
+
+foreign import ccall "X11/Xlib.h XSetICFocus"	c_XSetICFocus :: Ptr XIC -> IO ()
+setICFocus :: XIC -> IO ()
+setICFocus (XIC xic) = c_XSetICFocus xic
+
+foreign import ccall "X11/Xlib.h XUnsetICFocus"	c_XUnsetICFocus :: Ptr XIC -> IO ()
+unsetICFocus :: XIC -> IO ()
+unsetICFocus (XIC xic) = c_XUnsetICFocus xic
 
 withMaybeCString :: Maybe String -> ( CString -> IO a ) -> IO a
 withMaybeCString Nothing      f = f nullPtr
