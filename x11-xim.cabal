@@ -2,7 +2,7 @@ build-type:	Simple
 cabal-version:	>= 1.6
 
 name:		x11-xim
-version:	0.0.8
+version:	0.0.9.0
 author:		Yoshikuni Jujo
 maintainer:	Yoshikuni Jujo <PAF01143@nifty.ne.jp>
 license:	BSD3
@@ -20,7 +20,7 @@ source-repository	head
 source-repository	this
   type:		git
   location:	git://github.com/YoshikuniJujo/x11-xim_haskell/
-  tag:		0.0.8
+  tag:		0.0.9.0
 	
 library
   exposed-modules:	Graphics.X11.Xim

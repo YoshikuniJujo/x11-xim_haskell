@@ -5,3 +5,6 @@
 _ehs/
 *.bak
 .yavie.*
+/Graphics/X11/Xim.hs
+/Graphics/X11/XimTypes.hs
+.*.swp

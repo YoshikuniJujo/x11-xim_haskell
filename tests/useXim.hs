@@ -101,6 +101,7 @@ nextNotFilteredEvent dpy e = do
 
 main :: IO ()
 main = runWithXIM $ \dpy win gc im ic delWin fs e -> do
+	setICFocus ic
 	posx	<- newIORef 5
 	posy	<- newIORef 20
 	doUntil_ $ do
